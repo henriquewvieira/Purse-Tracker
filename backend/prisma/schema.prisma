@@ -1,0 +1,62 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Material {
+  id              Int             @id @default(autoincrement())
+  name            String
+  unit            String
+  price_per_unit  Float
+  supplier        String?
+  notes           String?
+  purse_materials PurseMaterial[]
+}
+
+model PurseType {
+  id                 Int                @id @default(autoincrement())
+  name               String
+  description        String?
+  image_url          String?
+  purse_materials    PurseMaterial[]
+  production_records ProductionRecord[]
+}
+
+model PurseMaterial {
+  id            Int       @id @default(autoincrement())
+  purse_type    PurseType @relation(fields: [purse_type_id], references: [id], onDelete: Cascade)
+  purse_type_id Int
+  material      Material  @relation(fields: [material_id], references: [id])
+  material_id   Int
+  quantity      Float
+}
+
+model Settings {
+  id            Int    @id @default(1)
+  hourly_rate   Float  @default(15)
+  currency      String @default("USD")
+  password_hash String
+}
+
+model ProductionRecord {
+  id                    Int       @id @default(autoincrement())
+  purse_type            PurseType @relation(fields: [purse_type_id], references: [id])
+  purse_type_id         Int
+  date_produced         DateTime
+  quantity              Int
+  sale_price_per_unit   Float?
+  labor_minutes         Float     @default(0)
+  other_costs           Float     @default(0)
+  material_overrides    String    @default("{}")
+  computed_total_cost   Float
+  computed_cost_per_unit Float
+  computed_revenue      Float
+  computed_profit       Float
+  notes                 String?
+
+  @@index([date_produced])
+}
