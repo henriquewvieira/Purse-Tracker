@@ -24,6 +24,11 @@ app.use(cors({
 
 app.use(express.json())
 
+app.use((req, res, next) => {
+  res.setHeader('Cache-Control', 'no-store')
+  next()
+})
+
 app.use(session({
   store: new PgSession({
     conString: process.env.DATABASE_URL,
@@ -35,8 +40,8 @@ app.use(session({
   saveUninitialized: false,
   cookie: {
     httpOnly: true,
-    sameSite: 'lax',
-    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'none',
+    secure: true,
     maxAge: 7 * 24 * 60 * 60 * 1000,
   },
 }))
