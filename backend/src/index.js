@@ -21,7 +21,7 @@ const SQLiteStore = connectSqlite3(session)
 
 const app = express()
 
-// CORS — allow frontend dev server
+// CORS — allow frontend origin (same origin in production, dev server locally)
 app.use(cors({
   origin: process.env.FRONTEND_URL || 'http://localhost:5173',
   credentials: true,
@@ -38,6 +38,7 @@ app.use(session({
   cookie: {
     httpOnly: true,
     sameSite: 'lax',
+    secure: process.env.NODE_ENV === 'production',
     maxAge: 7 * 24 * 60 * 60 * 1000,
   },
 }))
