@@ -1,14 +1,19 @@
 const BASE = import.meta.env.VITE_API_BASE || '/api'
 
 export async function apiRequest(method, path, body) {
+  const token = localStorage.getItem('token')
+  const headers = {}
+  if (body) headers['Content-Type'] = 'application/json'
+  if (token) headers['Authorization'] = `Bearer ${token}`
+
   const res = await fetch(`${BASE}${path}`, {
     method,
-    credentials: 'include',
-    headers: body ? { 'Content-Type': 'application/json' } : {},
+    headers,
     body: body ? JSON.stringify(body) : undefined,
   })
 
   if (res.status === 401) {
+    localStorage.removeItem('token')
     window.dispatchEvent(new Event('unauthorized'))
     throw new Error('Unauthorized')
   }

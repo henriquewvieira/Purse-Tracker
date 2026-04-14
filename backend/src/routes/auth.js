@@ -1,9 +1,12 @@
 import { Router } from 'express'
 import bcrypt from 'bcryptjs'
+import jwt from 'jsonwebtoken'
 import { PrismaClient } from '@prisma/client'
 
 const prisma = new PrismaClient()
 const router = Router()
+
+const secret = () => process.env.SESSION_SECRET || 'dev-secret'
 
 // POST /api/auth/login
 router.post('/login', async (req, res, next) => {
@@ -17,28 +20,28 @@ router.post('/login', async (req, res, next) => {
     const match = await bcrypt.compare(password, settings.password_hash)
     if (!match) return res.status(401).json({ error: 'Incorrect password' })
 
-    req.session.authenticated = true
-    res.json({ ok: true })
+    const token = jwt.sign({ authenticated: true }, secret(), { expiresIn: '7d' })
+    res.json({ ok: true, token })
   } catch (err) {
     next(err)
   }
 })
 
 // POST /api/auth/logout
-router.post('/logout', (req, res, next) => {
-  req.session.destroy((err) => {
-    if (err) return next(err)
-    res.clearCookie('connect.sid')
-    res.json({ ok: true })
-  })
+router.post('/logout', (req, res) => {
+  res.json({ ok: true })
 })
 
 // GET /api/auth/me
 router.get('/me', (req, res) => {
-  if (req.session?.authenticated) {
-    return res.json({ authenticated: true })
+  const auth = req.headers.authorization
+  if (!auth?.startsWith('Bearer ')) return res.status(401).json({ authenticated: false })
+  try {
+    jwt.verify(auth.slice(7), secret())
+    res.json({ authenticated: true })
+  } catch {
+    res.status(401).json({ authenticated: false })
   }
-  res.status(401).json({ authenticated: false })
 })
 
 export default router

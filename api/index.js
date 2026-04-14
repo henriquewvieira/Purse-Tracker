@@ -1,7 +1,5 @@
 import 'dotenv/config'
 import express from 'express'
-import session from 'express-session'
-import connectPgSimple from 'connect-pg-simple'
 import cors from 'cors'
 
 import { requireAuth } from '../backend/src/middleware/auth.js'
@@ -13,9 +11,12 @@ import productionRecordsRoutes from '../backend/src/routes/production-records.js
 import reportsRoutes from '../backend/src/routes/reports.js'
 import settingsRoutes from '../backend/src/routes/settings.js'
 
-const PgSession = connectPgSimple(session)
-
 const app = express()
+
+app.use((req, res, next) => {
+  res.setHeader('Cache-Control', 'no-store')
+  next()
+})
 
 app.use(cors({
   origin: process.env.FRONTEND_URL || 'http://localhost:5173',
@@ -23,28 +24,6 @@ app.use(cors({
 }))
 
 app.use(express.json())
-
-app.use((req, res, next) => {
-  res.setHeader('Cache-Control', 'no-store')
-  next()
-})
-
-app.use(session({
-  store: new PgSession({
-    conString: process.env.DATABASE_URL,
-    tableName: 'session',
-    createTableIfMissing: true,
-  }),
-  secret: process.env.SESSION_SECRET || 'dev-secret',
-  resave: false,
-  saveUninitialized: false,
-  cookie: {
-    httpOnly: true,
-    sameSite: 'none',
-    secure: true,
-    maxAge: 7 * 24 * 60 * 60 * 1000,
-  },
-}))
 
 app.use('/api/auth', authRoutes)
 app.use('/api', requireAuth)
