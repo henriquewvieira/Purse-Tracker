@@ -4,14 +4,14 @@ import session from 'express-session'
 import connectPgSimple from 'connect-pg-simple'
 import cors from 'cors'
 
-import { requireAuth } from '../backend/src/middleware/auth.js'
-import { errorHandler } from '../backend/src/middleware/errorHandler.js'
-import authRoutes from '../backend/src/routes/auth.js'
-import materialsRoutes from '../backend/src/routes/materials.js'
-import purseTypesRoutes from '../backend/src/routes/purse-types.js'
-import productionRecordsRoutes from '../backend/src/routes/production-records.js'
-import reportsRoutes from '../backend/src/routes/reports.js'
-import settingsRoutes from '../backend/src/routes/settings.js'
+import { requireAuth } from './src/middleware/auth.js'
+import { errorHandler } from './src/middleware/errorHandler.js'
+import authRoutes from './src/routes/auth.js'
+import materialsRoutes from './src/routes/materials.js'
+import purseTypesRoutes from './src/routes/purse-types.js'
+import productionRecordsRoutes from './src/routes/production-records.js'
+import reportsRoutes from './src/routes/reports.js'
+import settingsRoutes from './src/routes/settings.js'
 
 const PgSession = connectPgSimple(session)
 

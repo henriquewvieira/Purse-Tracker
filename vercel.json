@@ -1,9 +1,9 @@
 {
   "version": 2,
-  "buildCommand": "npm install && npx prisma generate --schema=backend/prisma/schema.prisma && cd frontend && npm install && npm run build",
+  "buildCommand": "cd frontend && npm install && npm run build",
   "outputDirectory": "frontend/dist",
   "rewrites": [
-    { "source": "/api/:path*", "destination": "/api/index.js" },
+    { "source": "/api/:path*", "destination": "/backend/api.js" },
     { "source": "/:path*", "destination": "/index.html" }
   ]
 }
