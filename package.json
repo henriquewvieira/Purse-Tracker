@@ -2,9 +2,7 @@
   "name": "purse-tracker",
   "version": "1.0.0",
   "type": "module",
-  "scripts": {
-    "build": "npx prisma generate"
-  },
+  "scripts": {},
   "dependencies": {
     "@prisma/client": "^5.14.0",
     "bcryptjs": "^2.4.3",
