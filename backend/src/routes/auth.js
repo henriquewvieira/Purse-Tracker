@@ -14,8 +14,17 @@ router.post('/login', async (req, res, next) => {
     const { password } = req.body
     if (!password) return res.status(400).json({ error: 'Password required' })
 
-    const settings = await prisma.settings.findUnique({ where: { id: 1 } })
-    if (!settings) return res.status(500).json({ error: 'App not configured' })
+    let settings = await prisma.settings.findUnique({ where: { id: 1 } })
+    if (!settings) {
+      settings = await prisma.settings.create({
+        data: {
+          id: 1,
+          hourly_rate: 15,
+          currency: 'USD',
+          password_hash: await bcrypt.hash('admin123', 10),
+        },
+      })
+    }
 
     const match = await bcrypt.compare(password, settings.password_hash)
     if (!match) return res.status(401).json({ error: 'Incorrect password' })
