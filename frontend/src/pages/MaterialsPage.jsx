@@ -10,10 +10,12 @@ const EMPTY = { name: '', unit: '', price_per_unit: '', supplier: '', notes: '' 
 export default function MaterialsPage() {
   const [materials, setMaterials] = useState([])
   const [loading, setLoading] = useState(true)
-  const [editing, setEditing] = useState(null) // null = closed, {} = new, {id,...} = edit
+  const [editing, setEditing] = useState(null)
   const [form, setForm] = useState(EMPTY)
   const [error, setError] = useState('')
   const [saving, setSaving] = useState(false)
+  const [confirmDelete, setConfirmDelete] = useState(null)
+  const [deleting, setDeleting] = useState(false)
 
   const load = () => getMaterials().then(setMaterials).finally(() => setLoading(false))
   useEffect(() => { load() }, [])
@@ -42,13 +44,16 @@ export default function MaterialsPage() {
     }
   }
 
-  const handleDelete = async (m) => {
-    if (!window.confirm(`Delete "${m.name}"?`)) return
+  const handleDelete = async () => {
+    setDeleting(true)
     try {
-      await deleteMaterial(m.id)
-      setMaterials((prev) => prev.filter((x) => x.id !== m.id))
+      await deleteMaterial(confirmDelete.id)
+      setMaterials((prev) => prev.filter((x) => x.id !== confirmDelete.id))
+      setConfirmDelete(null)
     } catch (err) {
       alert(err.message)
+    } finally {
+      setDeleting(false)
     }
   }
 
@@ -86,7 +91,7 @@ export default function MaterialsPage() {
                   <td className="px-4 py-3">
                     <div className="flex gap-2 justify-end">
                       <Button variant="ghost" size="sm" onClick={() => openEdit(m)}>Edit</Button>
-                      <Button variant="ghost" size="sm" className="text-red-500 hover:text-red-700" onClick={() => handleDelete(m)}>Del</Button>
+                      <Button variant="ghost" size="sm" className="text-red-500 hover:text-red-700" onClick={() => setConfirmDelete(m)}>Del</Button>
                     </div>
                   </td>
                 </tr>
@@ -109,6 +114,22 @@ export default function MaterialsPage() {
             <Button type="submit" disabled={saving}>{saving ? 'Saving…' : 'Save'}</Button>
           </div>
         </form>
+      </Modal>
+
+      <Modal isOpen={confirmDelete !== null} onClose={() => setConfirmDelete(null)} title="Delete Material?">
+        {confirmDelete && (
+          <div className="space-y-4">
+            <p className="text-gray-600 text-sm">
+              Are you sure you want to delete <span className="font-semibold">"{confirmDelete.name}"</span>? This cannot be undone.
+            </p>
+            <div className="flex gap-3 justify-end">
+              <Button variant="secondary" onClick={() => setConfirmDelete(null)}>Cancel</Button>
+              <Button onClick={handleDelete} disabled={deleting} className="bg-red-600 hover:bg-red-700 text-white">
+                {deleting ? 'Deleting…' : 'Delete'}
+              </Button>
+            </div>
+          </div>
+        )}
       </Modal>
     </div>
   )

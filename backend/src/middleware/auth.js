@@ -2,13 +2,19 @@ import jwt from 'jsonwebtoken'
 
 const secret = () => process.env.SESSION_SECRET || 'dev-secret'
 
-export function requireAuth(req, res, next) {
-  const auth = req.headers.authorization
-  if (!auth?.startsWith('Bearer ')) return res.status(401).json({ error: 'Unauthorized' })
+export function verifyToken(authHeader) {
+  if (!authHeader?.startsWith('Bearer ')) return false
   try {
-    jwt.verify(auth.slice(7), secret())
-    next()
+    jwt.verify(authHeader.slice(7), secret())
+    return true
   } catch {
-    res.status(401).json({ error: 'Unauthorized' })
+    return false
   }
+}
+
+export function requireAuth(req, res, next) {
+  if (!verifyToken(req.headers.authorization)) {
+    return res.status(401).json({ error: 'Unauthorized' })
+  }
+  next()
 }

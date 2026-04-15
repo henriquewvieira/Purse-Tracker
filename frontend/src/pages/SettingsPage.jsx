@@ -5,7 +5,7 @@ import Input from '../components/ui/Input.jsx'
 import Spinner from '../components/ui/Spinner.jsx'
 
 export default function SettingsPage() {
-  const [form, setForm] = useState({ hourly_rate: '', currency: 'USD', new_password: '', confirm_password: '' })
+  const [form, setForm] = useState({ hourly_rate: '', new_password: '', confirm_password: '' })
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
@@ -13,7 +13,7 @@ export default function SettingsPage() {
 
   useEffect(() => {
     getSettings()
-      .then((s) => setForm((f) => ({ ...f, hourly_rate: s.hourly_rate, currency: s.currency })))
+      .then((s) => setForm((f) => ({ ...f, hourly_rate: s.hourly_rate })))
       .finally(() => setLoading(false))
   }, [])
 
@@ -33,7 +33,7 @@ export default function SettingsPage() {
 
     setSaving(true)
     try {
-      const payload = { hourly_rate: Number(form.hourly_rate), currency: form.currency }
+      const payload = { hourly_rate: Number(form.hourly_rate) }
       if (form.new_password) payload.new_password = form.new_password
       await updateSettings(payload)
       setForm((f) => ({ ...f, new_password: '', confirm_password: '' }))
@@ -60,19 +60,6 @@ export default function SettingsPage() {
           onChange={(e) => setForm({ ...form, hourly_rate: e.target.value })}
           required
         />
-        <div>
-          <label className="text-sm font-medium text-gray-700 block mb-1">Currency</label>
-          <select
-            className="w-full border border-gray-300 rounded-xl px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-indigo-400"
-            value={form.currency}
-            onChange={(e) => setForm({ ...form, currency: e.target.value })}
-          >
-            {['USD', 'EUR', 'GBP', 'CAD', 'AUD', 'BRL', 'MXN'].map((c) => (
-              <option key={c} value={c}>{c}</option>
-            ))}
-          </select>
-        </div>
-
         <hr className="border-gray-100" />
         <p className="text-sm text-gray-500 font-medium">Change Password (leave blank to keep current)</p>
         <Input

@@ -1,8 +1,6 @@
 import { Router } from 'express'
-import { PrismaClient } from '@prisma/client'
+import prisma from '../lib/prisma.js'
 import { computeCosts } from '../lib/computeCosts.js'
-
-const prisma = new PrismaClient()
 const router = Router()
 
 // GET /api/production-records
@@ -93,7 +91,81 @@ router.post('/', async (req, res, next) => {
   } catch (err) { next(err) }
 })
 
-function deserializeOverrides(record) {
+// PUT /api/production-records/:id
+router.put('/:id', async (req, res, next) => {
+  try {
+    const id = Number(req.params.id)
+    const {
+      purse_type_id,
+      date_produced,
+      quantity,
+      sale_price_per_unit,
+      labor_minutes = 0,
+      other_costs = 0,
+      material_overrides = {},
+      notes,
+    } = req.body
+
+    if (!purse_type_id || !date_produced || !quantity) {
+      return res.status(400).json({ error: 'purse_type_id, date_produced, and quantity are required' })
+    }
+
+    const purseType = await prisma.purseType.findUnique({
+      where: { id: Number(purse_type_id) },
+      include: { purse_materials: true },
+    })
+    if (!purseType) return res.status(404).json({ error: 'Purse type not found' })
+
+    const materialIds = purseType.purse_materials.map((pm) => pm.material_id)
+    const materialList = await prisma.material.findMany({ where: { id: { in: materialIds } } })
+    const materialsMap = Object.fromEntries(materialList.map((m) => [m.id, m]))
+
+    const settings = await prisma.settings.findUnique({ where: { id: 1 } })
+
+    const productionInput = {
+      quantity: Number(quantity),
+      labor_minutes: Number(labor_minutes),
+      other_costs: Number(other_costs),
+      sale_price_per_unit: sale_price_per_unit != null ? Number(sale_price_per_unit) : null,
+      material_overrides,
+    }
+
+    const { cost_per_unit, total_cost, revenue, profit } = computeCosts(
+      purseType, materialsMap, productionInput, settings
+    )
+
+    const record = await prisma.productionRecord.update({
+      where: { id },
+      data: {
+        purse_type_id: Number(purse_type_id),
+        date_produced: new Date(date_produced),
+        quantity: Number(quantity),
+        sale_price_per_unit: productionInput.sale_price_per_unit,
+        labor_minutes: productionInput.labor_minutes,
+        other_costs: productionInput.other_costs,
+        material_overrides: JSON.stringify(material_overrides),
+        computed_cost_per_unit: cost_per_unit,
+        computed_total_cost: total_cost,
+        computed_revenue: revenue,
+        computed_profit: profit,
+        notes,
+      },
+      include: { purse_type: true },
+    })
+
+    res.json(deserializeOverrides(record))
+  } catch (err) { next(err) }
+})
+
+// DELETE /api/production-records/:id
+router.delete('/:id', async (req, res, next) => {
+  try {
+    await prisma.productionRecord.delete({ where: { id: Number(req.params.id) } })
+    res.status(204).send()
+  } catch (err) { next(err) }
+})
+
+
   return {
     ...record,
     material_overrides: typeof record.material_overrides === 'string'

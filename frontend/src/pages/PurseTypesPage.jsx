@@ -51,6 +51,8 @@ export default function PurseTypesPage() {
   const [rows, setRows] = useState([{ material_id: '', quantity: '' }])
   const [error, setError] = useState('')
   const [saving, setSaving] = useState(false)
+  const [confirmDelete, setConfirmDelete] = useState(null)
+  const [deleting, setDeleting] = useState(false)
 
   const load = () =>
     Promise.all([getPurseTypes(), getMaterials()])
@@ -109,13 +111,16 @@ export default function PurseTypesPage() {
     }
   }
 
-  const handleDelete = async (t) => {
-    if (!window.confirm(`Delete "${t.name}"?`)) return
+  const handleDelete = async () => {
+    setDeleting(true)
     try {
-      await deletePurseType(t.id)
-      setTypes((prev) => prev.filter((x) => x.id !== t.id))
+      await deletePurseType(confirmDelete.id)
+      setTypes((prev) => prev.filter((x) => x.id !== confirmDelete.id))
+      setConfirmDelete(null)
     } catch (err) {
       alert(err.message)
+    } finally {
+      setDeleting(false)
     }
   }
 
@@ -139,7 +144,7 @@ export default function PurseTypesPage() {
                 <h2 className="text-lg font-bold text-gray-800">{t.name}</h2>
                 <div className="flex gap-2">
                   <Button variant="ghost" size="sm" onClick={() => openEdit(t)}>Edit</Button>
-                  <Button variant="ghost" size="sm" className="text-red-500" onClick={() => handleDelete(t)}>Del</Button>
+                  <Button variant="ghost" size="sm" className="text-red-500" onClick={() => setConfirmDelete(t)}>Del</Button>
                 </div>
               </div>
               {t.description && <p className="text-sm text-gray-500 mb-3">{t.description}</p>}
@@ -188,6 +193,22 @@ export default function PurseTypesPage() {
             <Button type="submit" disabled={saving}>{saving ? 'Saving…' : 'Save'}</Button>
           </div>
         </form>
+      </Modal>
+
+      <Modal isOpen={confirmDelete !== null} onClose={() => setConfirmDelete(null)} title="Delete Purse Type?">
+        {confirmDelete && (
+          <div className="space-y-4">
+            <p className="text-gray-600 text-sm">
+              Are you sure you want to delete <span className="font-semibold">"{confirmDelete.name}"</span>? This cannot be undone.
+            </p>
+            <div className="flex gap-3 justify-end">
+              <Button variant="secondary" onClick={() => setConfirmDelete(null)}>Cancel</Button>
+              <Button onClick={handleDelete} disabled={deleting} className="bg-red-600 hover:bg-red-700 text-white">
+                {deleting ? 'Deleting…' : 'Delete'}
+              </Button>
+            </div>
+          </div>
+        )}
       </Modal>
     </div>
   )

@@ -29,10 +29,9 @@ export default function Dashboard() {
   const [report, setReport] = useState(null)
   const [history, setHistory] = useState([])
   const [loading, setLoading] = useState(true)
-  const [currency, setCurrency] = useState('USD')
 
   const fmt = (n) =>
-    new Intl.NumberFormat(undefined, { style: 'currency', currency }).format(n ?? 0)
+    new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(n ?? 0)
 
   useEffect(() => {
     setLoading(true)

@@ -1,9 +1,9 @@
 import { Router } from 'express'
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
-import { PrismaClient } from '@prisma/client'
+import prisma from '../lib/prisma.js'
+import { verifyToken } from '../middleware/auth.js'
 
-const prisma = new PrismaClient()
 const router = Router()
 
 const secret = () => process.env.SESSION_SECRET || 'dev-secret'
@@ -34,14 +34,8 @@ router.post('/logout', (req, res) => {
 
 // GET /api/auth/me
 router.get('/me', (req, res) => {
-  const auth = req.headers.authorization
-  if (!auth?.startsWith('Bearer ')) return res.status(401).json({ authenticated: false })
-  try {
-    jwt.verify(auth.slice(7), secret())
-    res.json({ authenticated: true })
-  } catch {
-    res.status(401).json({ authenticated: false })
-  }
+  const ok = verifyToken(req.headers.authorization)
+  res.status(ok ? 200 : 401).json({ authenticated: ok })
 })
 
 export default router

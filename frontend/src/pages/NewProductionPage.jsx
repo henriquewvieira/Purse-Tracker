@@ -203,7 +203,6 @@ export default function NewProductionPage() {
             total_cost={preview.total_cost}
             revenue={preview.revenue}
             profit={preview.profit}
-            currency={settings?.currency}
           />
           {error && <p className="text-red-500 text-sm">{error}</p>}
           <div className="flex gap-3 pt-2">

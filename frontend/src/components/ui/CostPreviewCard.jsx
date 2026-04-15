@@ -1,6 +1,7 @@
-export default function CostPreviewCard({ cost_per_unit, total_cost, revenue, profit, currency = 'USD' }) {
-  const fmt = (n) =>
-    new Intl.NumberFormat(undefined, { style: 'currency', currency }).format(n ?? 0)
+const fmt = (n) =>
+  new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(n ?? 0)
+
+export default function CostPreviewCard({ cost_per_unit, total_cost, revenue, profit }) {
 
   const margin = revenue > 0 ? ((profit / revenue) * 100).toFixed(1) : null
   const isProfit = profit >= 0

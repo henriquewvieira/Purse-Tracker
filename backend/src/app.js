@@ -1,7 +1,5 @@
 import 'dotenv/config'
 import express from 'express'
-import session from 'express-session'
-import connectPgSimple from 'connect-pg-simple'
 import cors from 'cors'
 import { fileURLToPath } from 'url'
 import path from 'path'
@@ -16,7 +14,6 @@ import reportsRoutes from './routes/reports.js'
 import settingsRoutes from './routes/settings.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
-const PgSession = connectPgSimple(session)
 
 const app = express()
 
@@ -26,23 +23,6 @@ app.use(cors({
 }))
 
 app.use(express.json())
-
-app.use(session({
-  store: new PgSession({
-    conString: process.env.DATABASE_URL,
-    tableName: 'session',
-    createTableIfMissing: true,
-  }),
-  secret: process.env.SESSION_SECRET || 'dev-secret',
-  resave: false,
-  saveUninitialized: false,
-  cookie: {
-    httpOnly: true,
-    sameSite: 'lax',
-    secure: process.env.NODE_ENV === 'production',
-    maxAge: 7 * 24 * 60 * 60 * 1000,
-  },
-}))
 
 app.use('/api/auth', authRoutes)
 
