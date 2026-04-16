@@ -27,7 +27,7 @@ function MaterialRow({ row, index, materials, onChange, onRemove }) {
         {index === 0 && <label className="text-xs text-gray-500 block mb-1">Qty</label>}
         <input
           type="number"
-          step="0.01"
+          step="any"
           min="0.001"
           className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
           value={row.quantity}
