@@ -166,6 +166,7 @@ router.delete('/:id', async (req, res, next) => {
 })
 
 
+function deserializeOverrides(record) {
   return {
     ...record,
     material_overrides: typeof record.material_overrides === 'string'
