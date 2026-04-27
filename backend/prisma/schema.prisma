@@ -13,6 +13,8 @@ model Material {
   name            String
   unit            String
   price_per_unit  Float
+  width_cm        Float?
+  height_cm       Float?
   supplier        String?
   notes           String?
   purse_materials PurseMaterial[]
@@ -34,6 +36,8 @@ model PurseMaterial {
   material      Material  @relation(fields: [material_id], references: [id])
   material_id   Int
   quantity      Float
+  width_cm      Float?
+  height_cm     Float?
 }
 
 model Settings {

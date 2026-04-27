@@ -46,6 +46,8 @@ router.post('/', async (req, res, next) => {
           create: purse_materials.map((pm) => ({
             material_id: Number(pm.material_id),
             quantity: Number(pm.quantity),
+            width_cm: pm.width_cm != null ? Number(pm.width_cm) : null,
+            height_cm: pm.height_cm != null ? Number(pm.height_cm) : null,
           })),
         },
       },
@@ -73,6 +75,8 @@ router.put('/:id', async (req, res, next) => {
             create: purse_materials.map((pm) => ({
               material_id: Number(pm.material_id),
               quantity: Number(pm.quantity),
+              width_cm: pm.width_cm != null ? Number(pm.width_cm) : null,
+              height_cm: pm.height_cm != null ? Number(pm.height_cm) : null,
             })),
           },
         },

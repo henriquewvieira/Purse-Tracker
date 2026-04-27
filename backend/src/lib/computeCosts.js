@@ -1,10 +1,19 @@
 export function computeCosts(purseType, materials, productionRecord, settings) {
   const overrides = productionRecord.material_overrides || {}
   const material_cost = purseType.purse_materials.reduce((sum, pm) => {
-    const price = overrides[pm.material_id] != null
-      ? overrides[pm.material_id]
-      : materials[pm.material_id].price_per_unit
-    return sum + pm.quantity * price
+    const mat = materials[pm.material_id]
+    const overridePrice = overrides[pm.material_id]
+    let cost
+    if (pm.width_cm != null && pm.height_cm != null && mat.width_cm != null && mat.height_cm != null) {
+      // Area-based: price_per_cm² × area used
+      const piecePrice = overridePrice != null ? overridePrice : mat.price_per_unit
+      const price_per_cm2 = piecePrice / (mat.width_cm * mat.height_cm)
+      cost = price_per_cm2 * (pm.width_cm * pm.height_cm)
+    } else {
+      const price = overridePrice != null ? overridePrice : mat.price_per_unit
+      cost = pm.quantity * price
+    }
+    return sum + cost
   }, 0)
   const labor_cost = (productionRecord.labor_minutes / 60) * settings.hourly_rate
   const cost_per_unit = material_cost + labor_cost + (productionRecord.other_costs || 0)

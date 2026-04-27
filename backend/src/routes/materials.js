@@ -13,12 +13,17 @@ router.get('/', async (req, res, next) => {
 // POST /api/materials
 router.post('/', async (req, res, next) => {
   try {
-    const { name, unit, price_per_unit, supplier, notes } = req.body
+    const { name, unit, price_per_unit, width_cm, height_cm, supplier, notes } = req.body
     if (!name || !unit || price_per_unit == null) {
       return res.status(400).json({ error: 'name, unit, and price_per_unit are required' })
     }
     const material = await prisma.material.create({
-      data: { name, unit, price_per_unit: Number(price_per_unit), supplier, notes },
+      data: {
+        name, unit, supplier, notes,
+        price_per_unit: Number(price_per_unit),
+        width_cm: width_cm != null ? Number(width_cm) : null,
+        height_cm: height_cm != null ? Number(height_cm) : null,
+      },
     })
     res.status(201).json(material)
   } catch (err) { next(err) }
@@ -27,10 +32,15 @@ router.post('/', async (req, res, next) => {
 // PUT /api/materials/:id
 router.put('/:id', async (req, res, next) => {
   try {
-    const { name, unit, price_per_unit, supplier, notes } = req.body
+    const { name, unit, price_per_unit, width_cm, height_cm, supplier, notes } = req.body
     const material = await prisma.material.update({
       where: { id: Number(req.params.id) },
-      data: { name, unit, price_per_unit: price_per_unit != null ? Number(price_per_unit) : undefined, supplier, notes },
+      data: {
+        name, unit, supplier, notes,
+        price_per_unit: price_per_unit != null ? Number(price_per_unit) : undefined,
+        width_cm: width_cm != null ? Number(width_cm) : null,
+        height_cm: height_cm != null ? Number(height_cm) : null,
+      },
     })
     res.json(material)
   } catch (err) { next(err) }

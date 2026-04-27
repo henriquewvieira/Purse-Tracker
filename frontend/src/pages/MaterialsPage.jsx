@@ -5,7 +5,7 @@ import Button from '../components/ui/Button.jsx'
 import Input from '../components/ui/Input.jsx'
 import Spinner from '../components/ui/Spinner.jsx'
 
-const EMPTY = { name: '', unit: '', price_per_unit: '', supplier: '', notes: '' }
+const EMPTY = { name: '', unit: '', price_per_unit: '', width_cm: '', height_cm: '', supplier: '', notes: '' }
 
 export default function MaterialsPage() {
   const [materials, setMaterials] = useState([])
@@ -21,15 +21,31 @@ export default function MaterialsPage() {
   useEffect(() => { load() }, [])
 
   const openNew = () => { setEditing({}); setForm(EMPTY); setError('') }
-  const openEdit = (m) => { setEditing(m); setForm({ name: m.name, unit: m.unit, price_per_unit: m.price_per_unit, supplier: m.supplier || '', notes: m.notes || '' }); setError('') }
+  const openEdit = (m) => {
+    setEditing(m)
+    setForm({
+      name: m.name, unit: m.unit, price_per_unit: m.price_per_unit,
+      width_cm: m.width_cm ?? '', height_cm: m.height_cm ?? '',
+      supplier: m.supplier || '', notes: m.notes || '',
+    })
+    setError('')
+  }
   const close = () => setEditing(null)
+
+  const isArea = (unit) => unit.toLowerCase().includes('cm')
 
   const handleSave = async (e) => {
     e.preventDefault()
     setSaving(true)
     setError('')
     try {
-      const data = { ...form, price_per_unit: Number(form.price_per_unit) }
+      const area = isArea(form.unit)
+      const data = {
+        ...form,
+        price_per_unit: Number(form.price_per_unit),
+        width_cm: area && form.width_cm !== '' ? Number(form.width_cm) : null,
+        height_cm: area && form.height_cm !== '' ? Number(form.height_cm) : null,
+      }
       if (editing?.id) {
         await updateMaterial(editing.id, data)
       } else {
@@ -86,7 +102,11 @@ export default function MaterialsPage() {
                 <tr key={m.id} className="hover:bg-gray-50">
                   <td className="px-4 py-3 font-medium">{m.name}</td>
                   <td className="px-4 py-3 text-gray-600">{m.unit}</td>
-                  <td className="px-4 py-3">${Number(m.price_per_unit).toFixed(2)}</td>
+                  <td className="px-4 py-3">
+                    {m.width_cm != null && m.height_cm != null
+                      ? <>${Number(m.price_per_unit).toFixed(2)} <span className="text-gray-400 text-xs">({m.width_cm}×{m.height_cm} cm)</span></>
+                      : `$${Number(m.price_per_unit).toFixed(2)}`}
+                  </td>
                   <td className="px-4 py-3 text-gray-500 hidden md:table-cell">{m.supplier || '—'}</td>
                   <td className="px-4 py-3">
                     <div className="flex gap-2 justify-end">
@@ -104,8 +124,26 @@ export default function MaterialsPage() {
       <Modal isOpen={editing !== null} onClose={close} title={editing?.id ? 'Edit Material' : 'Add Material'}>
         <form onSubmit={handleSave} className="space-y-4">
           <Input label="Name *" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
-          <Input label="Unit (e.g. m², pcs) *" value={form.unit} onChange={(e) => setForm({ ...form, unit: e.target.value })} required />
-          <Input label="Price per Unit *" type="number" step="0.01" min="0" value={form.price_per_unit} onChange={(e) => setForm({ ...form, price_per_unit: e.target.value })} required />
+          <Input label="Unit (e.g. cm², m², pcs) *" value={form.unit} onChange={(e) => setForm({ ...form, unit: e.target.value })} required />
+          {isArea(form.unit) ? (
+            <>
+              <div className="flex gap-3">
+                <Input label="Width (cm) *" type="number" step="any" min="0.01" value={form.width_cm} onChange={(e) => setForm({ ...form, width_cm: e.target.value })} required />
+                <Input label="Height (cm) *" type="number" step="any" min="0.01" value={form.height_cm} onChange={(e) => setForm({ ...form, height_cm: e.target.value })} required />
+              </div>
+              {form.width_cm && form.height_cm && (
+                <p className="text-xs text-gray-400">Piece area: {(Number(form.width_cm) * Number(form.height_cm)).toFixed(2)} cm²</p>
+              )}
+              <Input label="Price for this piece *" type="number" step="0.01" min="0" value={form.price_per_unit} onChange={(e) => setForm({ ...form, price_per_unit: e.target.value })} required />
+              {form.price_per_unit && form.width_cm && form.height_cm && (
+                <p className="text-xs text-gray-400">
+                  = ${(Number(form.price_per_unit) / (Number(form.width_cm) * Number(form.height_cm))).toFixed(6)} / cm²
+                </p>
+              )}
+            </>
+          ) : (
+            <Input label="Price per Unit *" type="number" step="0.01" min="0" value={form.price_per_unit} onChange={(e) => setForm({ ...form, price_per_unit: e.target.value })} required />
+          )}
           <Input label="Supplier" value={form.supplier} onChange={(e) => setForm({ ...form, supplier: e.target.value })} />
           <Input label="Notes" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} />
           {error && <p className="text-red-500 text-sm">{error}</p>}

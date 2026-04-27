@@ -7,9 +7,12 @@ import Input from '../components/ui/Input.jsx'
 import Spinner from '../components/ui/Spinner.jsx'
 
 function MaterialRow({ row, index, materials, onChange, onRemove }) {
+  const selected = materials.find((m) => String(m.id) === String(row.material_id))
+  const isArea = selected && selected.unit.toLowerCase().includes('cm')
+
   return (
-    <div className="flex gap-2 items-end">
-      <div className="flex-1">
+    <div className="flex gap-2 items-end flex-wrap">
+      <div className="flex-1 min-w-32">
         {index === 0 && <label className="text-xs text-gray-500 block mb-1">Material</label>}
         <select
           className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
@@ -23,18 +26,41 @@ function MaterialRow({ row, index, materials, onChange, onRemove }) {
           ))}
         </select>
       </div>
-      <div className="w-24">
-        {index === 0 && <label className="text-xs text-gray-500 block mb-1">Qty</label>}
-        <input
-          type="number"
-          step="any"
-          min="0.001"
-          className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
-          value={row.quantity}
-          onChange={(e) => onChange(index, 'quantity', e.target.value)}
-          required
-        />
-      </div>
+      {isArea ? (
+        <>
+          <div className="w-20">
+            {index === 0 && <label className="text-xs text-gray-500 block mb-1">W (cm)</label>}
+            <input
+              type="number" step="any" min="0.01"
+              className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+              value={row.width_cm ?? ''}
+              onChange={(e) => onChange(index, 'width_cm', e.target.value)}
+              required
+            />
+          </div>
+          <div className="w-20">
+            {index === 0 && <label className="text-xs text-gray-500 block mb-1">H (cm)</label>}
+            <input
+              type="number" step="any" min="0.01"
+              className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+              value={row.height_cm ?? ''}
+              onChange={(e) => onChange(index, 'height_cm', e.target.value)}
+              required
+            />
+          </div>
+        </>
+      ) : (
+        <div className="w-24">
+          {index === 0 && <label className="text-xs text-gray-500 block mb-1">Qty</label>}
+          <input
+            type="number" step="any" min="0.001"
+            className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+            value={row.quantity ?? ''}
+            onChange={(e) => onChange(index, 'quantity', e.target.value)}
+            required
+          />
+        </div>
+      )}
       <Button variant="ghost" size="sm" type="button" onClick={() => onRemove(index)} className="text-red-400 mb-0.5">×</Button>
     </div>
   )
@@ -64,7 +90,7 @@ export default function PurseTypesPage() {
   const openNew = () => {
     setEditing({})
     setForm(EMPTY_FORM)
-    setRows([{ material_id: '', quantity: '' }])
+    setRows([{ material_id: '', quantity: '', width_cm: '', height_cm: '' }])
     setError('')
   }
   const openEdit = (t) => {
@@ -72,8 +98,13 @@ export default function PurseTypesPage() {
     setForm({ name: t.name, description: t.description || '', image_url: t.image_url || '' })
     setRows(
       t.purse_materials.length
-        ? t.purse_materials.map((pm) => ({ material_id: pm.material_id, quantity: pm.quantity }))
-        : [{ material_id: '', quantity: '' }]
+        ? t.purse_materials.map((pm) => ({
+            material_id: pm.material_id,
+            quantity: pm.quantity,
+            width_cm: pm.width_cm ?? '',
+            height_cm: pm.height_cm ?? '',
+          }))
+        : [{ material_id: '', quantity: '', width_cm: '', height_cm: '' }]
     )
     setError('')
   }
@@ -82,7 +113,7 @@ export default function PurseTypesPage() {
   const changeRow = (i, field, val) => {
     setRows((prev) => prev.map((r, idx) => idx === i ? { ...r, [field]: val } : r))
   }
-  const addRow = () => setRows((prev) => [...prev, { material_id: '', quantity: '' }])
+  const addRow = () => setRows((prev) => [...prev, { material_id: '', quantity: '', width_cm: '', height_cm: '' }])
   const removeRow = (i) => setRows((prev) => prev.filter((_, idx) => idx !== i))
 
   const handleSave = async (e) => {
@@ -94,7 +125,9 @@ export default function PurseTypesPage() {
         ...form,
         purse_materials: rows.filter((r) => r.material_id).map((r) => ({
           material_id: Number(r.material_id),
-          quantity: Number(r.quantity),
+          quantity: r.quantity !== '' ? Number(r.quantity) : 0,
+          width_cm: r.width_cm !== '' ? Number(r.width_cm) : null,
+          height_cm: r.height_cm !== '' ? Number(r.height_cm) : null,
         })),
       }
       if (editing?.id) {
@@ -152,7 +185,11 @@ export default function PurseTypesPage() {
                 {t.purse_materials.map((pm) => (
                   <div key={pm.id} className="text-sm flex justify-between">
                     <span className="text-gray-700">{pm.material.name}</span>
-                    <span className="text-gray-400">{pm.quantity} {pm.material.unit}</span>
+                    <span className="text-gray-400">
+                      {pm.width_cm != null && pm.height_cm != null
+                        ? `${pm.width_cm}×${pm.height_cm} cm`
+                        : `${pm.quantity} ${pm.material.unit}`}
+                    </span>
                   </div>
                 ))}
               </div>
