@@ -143,6 +143,7 @@ export default function NewProductionPage() {
           )}
           {purseTypes
             .filter((t) => t.name.toLowerCase().includes(search.toLowerCase()))
+            .sort((a, b) => a.name.localeCompare(b.name))
             .map((t) => (
             <button
               key={t.id}
