@@ -21,6 +21,7 @@ export default function NewProductionPage() {
   const [loading, setLoading] = useState(true)
 
   const [selectedType, setSelectedType] = useState(null)
+  const [search, setSearch] = useState('')
   const [form, setForm] = useState({
     date_produced: today(),
     quantity: 1,
@@ -72,6 +73,7 @@ export default function NewProductionPage() {
   const handleSelectType = (t) => {
     setSelectedType(t)
     setOverrides({})
+    setSearch('')
     // Pre-fill labor_minutes from purse type if available (no field on model; left as 0)
     setStep(2)
   }
@@ -128,10 +130,20 @@ export default function NewProductionPage() {
       {/* Step 1: Pick purse type */}
       {step === 1 && (
         <div className="space-y-3">
+          <input
+            type="text"
+            placeholder="Search by name…"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full border border-gray-300 rounded-xl px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-indigo-400"
+            autoFocus
+          />
           {purseTypes.length === 0 && (
             <p className="text-gray-400 text-center py-10">No purse types. Add one first.</p>
           )}
-          {purseTypes.map((t) => (
+          {purseTypes
+            .filter((t) => t.name.toLowerCase().includes(search.toLowerCase()))
+            .map((t) => (
             <button
               key={t.id}
               onClick={() => handleSelectType(t)}
@@ -144,6 +156,9 @@ export default function NewProductionPage() {
               </div>
             </button>
           ))}
+          {search && purseTypes.filter((t) => t.name.toLowerCase().includes(search.toLowerCase())).length === 0 && (
+            <p className="text-gray-400 text-center py-6">No purse types match "{search}".</p>
+          )}
         </div>
       )}
 
