@@ -24,6 +24,7 @@ export default function NewProductionPage() {
   const [search, setSearch] = useState('')
   const [form, setForm] = useState({
     date_produced: today(),
+    date_sold: '',
     quantity: 1,
     sale_price_per_unit: '',
     labor_minutes: 0,
@@ -96,6 +97,7 @@ export default function NewProductionPage() {
       await createProductionRecord({
         purse_type_id: selectedType.id,
         date_produced: form.date_produced,
+        date_sold: form.date_sold || null,
         quantity: Number(form.quantity),
         sale_price_per_unit: form.sale_price_per_unit !== '' ? Number(form.sale_price_per_unit) : null,
         labor_minutes: Number(form.labor_minutes) || 0,
@@ -168,6 +170,7 @@ export default function NewProductionPage() {
         <form onSubmit={handleNext} className="space-y-4">
           <div className="text-sm font-semibold text-indigo-600 mb-1">Type: {selectedType.name}</div>
           <Input label="Date Produced *" type="date" value={form.date_produced} onChange={(e) => setForm({ ...form, date_produced: e.target.value })} required />
+          <Input label="Date of Sell" type="date" value={form.date_sold} onChange={(e) => setForm({ ...form, date_sold: e.target.value })} />
           <Input label="Quantity *" type="number" min="1" value={form.quantity} onChange={(e) => setForm({ ...form, quantity: e.target.value })} required />
           <Input label="Sale Price per Unit ($)" type="number" step="0.01" min="0" value={form.sale_price_per_unit} onChange={(e) => setForm({ ...form, sale_price_per_unit: e.target.value })} placeholder="Optional" />
           <Input label="Labor Minutes" type="number" min="0" value={form.labor_minutes} onChange={(e) => setForm({ ...form, labor_minutes: e.target.value })} />

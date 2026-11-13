@@ -61,6 +61,7 @@ model ProductionRecord {
   computed_cost_per_unit Float
   computed_revenue      Float
   computed_profit       Float
+  date_sold             DateTime?
   notes                 String?
 
   @@index([date_produced])

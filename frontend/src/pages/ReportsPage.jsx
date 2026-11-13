@@ -86,6 +86,7 @@ export default function ReportsPage() {
     setEditForm({
       purse_type_id: r.purse_type_id,
       date_produced: toDateInput(r.date_produced),
+      date_sold: r.date_sold ? toDateInput(r.date_sold) : '',
       quantity: r.quantity,
       sale_price_per_unit: r.sale_price_per_unit ?? '',
       labor_minutes: r.labor_minutes,
@@ -138,6 +139,7 @@ export default function ReportsPage() {
       await updateProductionRecord(editRecord.id, {
         purse_type_id: Number(editForm.purse_type_id),
         date_produced: editForm.date_produced,
+        date_sold: editForm.date_sold || null,
         quantity: Number(editForm.quantity),
         sale_price_per_unit: editForm.sale_price_per_unit !== '' ? Number(editForm.sale_price_per_unit) : null,
         labor_minutes: Number(editForm.labor_minutes) || 0,
@@ -251,8 +253,15 @@ export default function ReportsPage() {
                 {report.records.map((r) => (
                   <div key={r.id} className="bg-white rounded-xl p-4 shadow-sm flex flex-wrap gap-4 text-sm items-center">
                     <div>
-                      <div className="text-gray-400 text-xs">Date</div>
+                      <div className="text-gray-400 text-xs">Produced</div>
                       <div>{new Date(r.date_produced).toLocaleDateString('pt-BR')}</div>
+                    </div>
+                    <div>
+                      <div className="text-gray-400 text-xs">Sold</div>
+                      {r.date_sold
+                        ? <div>{new Date(r.date_sold).toLocaleDateString('pt-BR')}</div>
+                        : <div className="text-amber-500 font-medium">Not sold yet</div>
+                      }
                     </div>
                     <div>
                       <div className="text-gray-400 text-xs">Type</div>
@@ -301,6 +310,7 @@ export default function ReportsPage() {
                 </select>
               </div>
               <Input label="Date Produced *" type="date" value={editForm.date_produced} onChange={(e) => setEditForm({ ...editForm, date_produced: e.target.value })} required />
+              <Input label="Date of Sell" type="date" value={editForm.date_sold} onChange={(e) => setEditForm({ ...editForm, date_sold: e.target.value })} />
               <Input label="Quantity *" type="number" min="1" value={editForm.quantity} onChange={(e) => setEditForm({ ...editForm, quantity: e.target.value })} required />
               <Input label="Sale Price per Unit (R$)" type="number" step="0.01" min="0" value={editForm.sale_price_per_unit} onChange={(e) => setEditForm({ ...editForm, sale_price_per_unit: e.target.value })} placeholder="Optional" />
               <Input label="Labor Minutes" type="number" min="0" value={editForm.labor_minutes} onChange={(e) => setEditForm({ ...editForm, labor_minutes: e.target.value })} />

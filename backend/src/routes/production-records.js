@@ -32,6 +32,7 @@ router.post('/', async (req, res, next) => {
     const {
       purse_type_id,
       date_produced,
+      date_sold,
       quantity,
       sale_price_per_unit,
       labor_minutes = 0,
@@ -73,6 +74,7 @@ router.post('/', async (req, res, next) => {
       data: {
         purse_type_id: Number(purse_type_id),
         date_produced: new Date(date_produced),
+        date_sold: date_sold ? new Date(date_sold) : null,
         quantity: Number(quantity),
         sale_price_per_unit: productionInput.sale_price_per_unit,
         labor_minutes: productionInput.labor_minutes,
@@ -98,6 +100,7 @@ router.put('/:id', async (req, res, next) => {
     const {
       purse_type_id,
       date_produced,
+      date_sold,
       quantity,
       sale_price_per_unit,
       labor_minutes = 0,
@@ -139,6 +142,7 @@ router.put('/:id', async (req, res, next) => {
       data: {
         purse_type_id: Number(purse_type_id),
         date_produced: new Date(date_produced),
+        date_sold: date_sold ? new Date(date_sold) : null,
         quantity: Number(quantity),
         sale_price_per_unit: productionInput.sale_price_per_unit,
         labor_minutes: productionInput.labor_minutes,

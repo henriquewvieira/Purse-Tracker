@@ -18,7 +18,12 @@ router.get('/monthly', async (req, res, next) => {
 
     const { start, end } = getDateRange(year, month)
     const records = await prisma.productionRecord.findMany({
-      where: { date_produced: { gte: start, lt: end } },
+      where: {
+        OR: [
+          { date_sold: { not: null, gte: start, lt: end } },
+          { date_sold: null, date_produced: { gte: start, lt: end } },
+        ],
+      },
       include: { purse_type: true },
       orderBy: { date_produced: 'asc' },
     })
@@ -77,7 +82,12 @@ router.get('/csv', async (req, res, next) => {
 
     const { start, end } = getDateRange(year, month)
     const records = await prisma.productionRecord.findMany({
-      where: { date_produced: { gte: start, lt: end } },
+      where: {
+        OR: [
+          { date_sold: { not: null, gte: start, lt: end } },
+          { date_sold: null, date_produced: { gte: start, lt: end } },
+        ],
+      },
       include: { purse_type: true },
       orderBy: { date_produced: 'asc' },
     })
